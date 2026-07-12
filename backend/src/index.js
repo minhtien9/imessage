@@ -6,6 +6,7 @@ import { connectDB } from "./lib/db.js";
 
 import fs from "fs";
 import path from "path";
+import job from "./lib/cron.js";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -22,6 +23,10 @@ app.use(
 );
 app.use(clerkMiddleware());
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
 
@@ -33,4 +38,6 @@ if (fs.existsSync(publicDir)) {
 app.listen(PORT, () => {
   connectDB();
   console.log(`Server is running on port ${PORT}`);
+
+  if (proccess.env.NODE_ENV === "production") job.start();
 });
